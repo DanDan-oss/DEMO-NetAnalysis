@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include "dpi.h"
 
-#define PCAP_FILE_PATH "/home/kali/Documents/CodeHub/Dpi/pcap/test.pcap"
+#define PCAP_FILE_PATH "../pcap/test.pcap"
 
 int main(int argc, char* argv[])
 {

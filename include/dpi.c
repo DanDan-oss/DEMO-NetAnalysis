@@ -4,7 +4,7 @@
 #include "dpi.h"
 
 
-dpi_result* dpi_init(const char* pcap_filename)
+dpi_result* dpi_init(const uint8_t* pcap_filename)
 {
     char ebuf[PCAP_ERRBUF_SIZE] = {0};  // pcap错误消息存放buffer
     pcap_t* pcap=NULL;
@@ -37,10 +37,18 @@ void dpi_fini(dpi_result* res_ptr)
 
 void dpi_loop(dpi_result* res_ptr)
 {
-    //typedef void (*pcap_handler)(u_char *, const struct pcap_pkthdr *, const u_char *);
-    pcap_loop(res_ptr->pcap_handle, 0, &pcap_callback, (u_char*)res_ptr);
+    pcap_t* pcap = res_ptr->pcap_handle;
+    if(NULL == pcap)
+        return;
+    memset(res_ptr, 0, sizeof(dpi_result));
+    // typedef void (*pcap_handler)(u_char *, const struct pcap_pkthdr *, const u_char *);
+    pcap_loop(pcap, 0, &pcap_callback, (u_int8_t*)res_ptr);
     printf("数据处理: 以太网包数量有%d\n", res_ptr->ether_count);
 	printf("数据处理: IP包数量有%d\n", res_ptr->ip_count);
+    printf("数据处理: ICPM包数量有%d\n", res_ptr->icpm_count);
+    printf("数据处理: TCP包数量有%d\n", res_ptr->tcp_count);
+    printf("数据处理: UDP包数量有%d\n", res_ptr->udp_count);
+     res_ptr->pcap_handle = pcap;
     return;
 }
 
@@ -50,7 +58,7 @@ struct aptest
     struct _dpi_ip_head ip;
 };
 
-void pcap_callback(u_char* user, const struct pcap_pkthdr* h,  const u_char* bytes)
+void pcap_callback(u_int8_t* user, const struct pcap_pkthdr* h,  const u_int8_t* bytes)
 {
    dpi_result* res_ptr= (dpi_result*)user;
    dpi_pkt pkt = {0};
@@ -58,15 +66,20 @@ void pcap_callback(u_char* user, const struct pcap_pkthdr* h,  const u_char* byt
 // 以太网包解析, 处理的每一个包都是以太网包
     ++res_ptr->ether_count;
     eth_type = analysis_ether( &pkt, (void*)bytes, h->caplen, res_ptr);
-   return;
+    return;
 }
 
 u_int32_t analysis_ether(dpi_pkt* pkt_ptr, void* ether_buffer,  uint32_t ether_len, 
             dpi_result* res_ptr)
 {
+    if(NULL == ether_buffer)
+    {
+        printf("ERROR: ether_buffer is NULL\n");
+        return  0;
+    }
+
     pkt_ptr->eth_head_ptr = (dpi_eth_head*)ether_buffer;
     pkt_ptr->ether_len =  ether_len;
-
     /*
     // 以太网帧长度 = 网络层长度 + 以太网头长度
     // 以太网帧长度除去CRC 4字节最低60,如果IP报文过短,剩余0填充.
@@ -106,6 +119,7 @@ u_int32_t analysis_ether(dpi_pkt* pkt_ptr, void* ether_buffer,  uint32_t ether_l
     {
         if(NULL != res_ptr)
             ++res_ptr->ip_count;
+        
         // IP报文长度 = 以太网长度 - 以太网头长度(14字节)
         pkt_ptr->ip_len = pkt_ptr->ether_len - 14;
         // IP头地址 = 以太网头地址 + 以太网头长度
@@ -117,6 +131,12 @@ u_int32_t analysis_ether(dpi_pkt* pkt_ptr, void* ether_buffer,  uint32_t ether_l
 
 u_int32_t analysis_ip(dpi_pkt* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  dpi_result* res_ptr)
 {
+    if(NULL == ip_buffer)
+    {
+        printf("Error: ip_buffer is null\n");
+        return 0;
+    }
+
     pkt_ptr->ip_head_ptr = ip_buffer;
     //pkt_ptr->ip_len = ip_len;
     pkt_ptr->ip_len = ntohs(*(uint16_t*) ((u_int8_t*)ip_buffer +2));
@@ -140,14 +160,30 @@ u_int32_t analysis_ip(dpi_pkt* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  dpi_
     {
         printf("error: IP Version not IPV4\n");
         return 0;
-    }    
+    }
 
     inet_ntop(AF_INET, (const u_int8_t*)ip_buffer +12, src_addr, sizeof(src_addr));
     inet_ntop(AF_INET, (const u_int8_t*)ip_buffer +16, des_addr, sizeof(des_addr));
 
     printf("    ipVer:%x ipHeadLen:%d ipLen:%d ipID:%.4x proto:%d ipSrc:%s ipDest:%s \n", 
        ip_version, ip_head_len, ipdate_len, ipdate_id, proto, src_addr, des_addr);
-    
 
+    switch (proto)
+    {
+    case 1:    //ICMP：1
+        ++res_ptr->icpm_count;
+
+        break;
+    case 6:    //TCP：6
+        ++res_ptr->tcp_count;
+
+        break;
+
+    case 17:   // UDP：17
+        ++res_ptr->udp_count;
+        break;
+    default:    // 其他协议
+        break;
+    }
     return pkt_ptr->ip_head_ptr->protocol;
 }

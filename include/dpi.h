@@ -6,10 +6,11 @@
 typedef struct _dpi_result
 {
     void* pcap_handle;       // pcap文件指针
-    unsigned int ether_count;   // 以太坊报文数量
-    unsigned int ip_count;      // IP报文数量
-    unsigned int tcp_count;    // TCP报文数量
-    unsigned int udp_count;     // udp报文数量
+    uint32_t ether_count;   // 以太坊报文数量
+    uint32_t ip_count;      // IP报文数量
+    uint32_t tcp_count;    // TCP报文数量
+    uint32_t udp_count;     // udp报文数量
+    uint32_t icpm_count;
 }dpi_result, *dpi_result_ptr;
 
 // 以太网头
@@ -24,15 +25,15 @@ typedef struct _dpi_eth_head
 typedef struct _dpi_ip_head
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN	//大端
-    unsigned int ip_headlen:4;  //版本 IPV4，IPV6
-    unsigned int ip_version:4;  //IP头长度,一般20字节, 等于20/4
+    uint32_t ip_headlen:4;  //版本 IPV4，IPV6
+    uint32_t ip_version:4;  //IP头长度,一般20字节, 等于20/4
 #elif __BYTE_ORDER == __BIG_ENDIAN	// 小端
-    unsigned int ip_version:4; 
-    unsigned int ip_headlen:4; 
+    uint32_t ip_version:4; 
+    uint32_t ip_headlen:4; 
 #endif
-    uint8_t tos;      //服务类型,一般没有使用，详细参考RFC
+    uint8_t tos;        //服务类型,一般没有使用，详细参考RFC
     uint16_t tot_len;  //header＋数据 总长度
-    uint16_t id;       //IP 报文的唯一id，分片报文的id 相同，便于进行重组。
+    uint16_t id;       //IP 报文的唯一id，分片报文的id 相同，便于进行重组
     uint16_t frag_off; //分片编号(标明是否分片)+分片偏移(偏移值/8)
     uint8_t ttl;       //路由器的跳转数
     uint8_t protocol;  //传输层协议, ICMP：1，TCP：6，UDP：17
@@ -50,16 +51,14 @@ typedef struct _dpi_pkt
 //===========网络层(IP、ICMP和IGMP)==========
     uint32_t ip_len;
     dpi_ip_head* ip_head_ptr;
-
 }dpi_pkt, *dpi_pkt_ptr;
-
 
 
 /* dpi初始化,打开cap文件
 @pcap_filename: cap文件路径
 return: 打开cap文件失败返回空
 */
-dpi_result* dpi_init(const char* pcap_filename);
+dpi_result* dpi_init(const uint8_t* pcap_filename);
 
 /*  dpi释放资源
 @pdpi_res: 自定义dpi文件信息结构
@@ -76,7 +75,7 @@ void dpi_loop(dpi_result* res_ptr);
 @h: 系统解析的报文客户信息
 @bytes: 报文数据
 */
-void pcap_callback(u_char* user, const struct pcap_pkthdr* h,  const u_char* bytes); 
+void pcap_callback(uint8_t* user, const struct pcap_pkthdr* h,  const uint8_t* bytes); 
 
 /* 解析处理以太网包报文
 @pkt_ptr: 存放解析数据的地址
