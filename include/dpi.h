@@ -3,15 +3,10 @@
 
 #include <pcap/pcap.h>
 
-typedef struct _dpi_result
-{
-    void* pcap_handle;       // pcap文件指针
-    uint32_t ether_count;   // 以太坊报文数量
-    uint32_t ip_count;      // IP报文数量
-    uint32_t tcp_count;    // TCP报文数量
-    uint32_t udp_count;     // udp报文数量
-    uint32_t icpm_count;
-}dpi_result, *dpi_result_ptr;
+#define  ETH_P_IP 0x0800 //IP协议
+#define  ETH_P_ARP 0x0806  //地址解析协议(Address Resolution Protocol)
+#define  ETH_P_RARP 0x8035  //返向地址解析协议(Reverse Address Resolution Protocol)
+#define  ETH_P_IPV6 0x86DD  //IPV6协议
 
 // 以太网头
 typedef struct _dpi_eth_head
@@ -25,22 +20,65 @@ typedef struct _dpi_eth_head
 typedef struct _dpi_ip_head
 {
 #if __BYTE_ORDER == __LITTLE_ENDIAN	//大端
-    uint32_t ip_headlen:4;  //版本 IPV4，IPV6
-    uint32_t ip_version:4;  //IP头长度,一般20字节, 等于20/4
+    uint8_t ip_headlen : 4;  //版本 IPV4，IPV6
+    uint8_t ip_version : 4;  //IP头长度,,一般值是5,一个位代表4个字节的长度.首部大小5*4=20字节
 #elif __BYTE_ORDER == __BIG_ENDIAN	// 小端
-    uint32_t ip_version:4; 
-    uint32_t ip_headlen:4; 
+    uint8_t ip_version:4; 
+    uint8_t ip_headlen:4; 
 #endif
-    uint8_t tos;        //服务类型,一般没有使用，详细参考RFC
-    uint16_t tot_len;  //header＋数据 总长度
-    uint16_t id;       //IP 报文的唯一id，分片报文的id 相同，便于进行重组
-    uint16_t frag_off; //分片编号(标明是否分片)+分片偏移(偏移值/8)
-    uint8_t ttl;       //路由器的跳转数
-    uint8_t protocol;  //传输层协议, ICMP：1，TCP：6，UDP：17
-    uint16_t check;    //IP header校验和,如果接收端收到报文进行计算如果校验和错误,直接丢弃。
-    uint32_t saddr;    //源IP地址
-    uint32_t daddr;    //目的IP地址
+
+    uint8_t ip_tos;        //服务类型,一般没有使用，详细参考RFC
+    uint16_t ip_tot_len;  //header＋数据 总长度
+    uint16_t ip_id;       //IP 报文的唯一id，分片报文的id 相同，便于进行重组
+
+    uint16_t ip_frag_off; //分片编号(标明是否分片)+分片偏移(偏移值/8)
+/*
+#if __BYTE_ORDER == __LITTLE_ENDIAN	//大端
+    uint16_t ip_frag_off : 13;    //偏移值
+    uint16_t ip_frag_num : 3;     //分片编号
+#elif __BYTE_ORDER == __BIG_ENDIAN	// 小端
+    uint16_t ip_frag_num : 3;
+    uint16_t ip_frag_off : 13;
+#endif
+*/
+    uint8_t ip_ttl;       //路由器的跳转数
+    uint8_t ip_proto;  //传输层协议, ICMP：1，TCP：6，UDP：17
+    uint16_t ip_check;    //IP header校验和,如果接收端收到报文进行计算如果校验和错误,直接丢弃。
+    uint32_t ip_saddr;    //源IP地址
+    uint32_t ip_daddr;    //目的IP地址
 }dpi_ip_head, *dpi_ip_head_ptr;
+
+typedef struct _dpi_tcp_head
+{
+	uint16_t tcp_sport;     // 源端口
+	uint16_t tcp_dport;     // 目标端口
+    uint32_t tcp_seq;
+    uint32_t tcp_ack;
+
+    uint16_t flags;     // 4位头首部长度;  6位保留位; 6位标志位(URG、ACK、PSH、PST、SYN、FIN);
+
+	uint16_t tcp_window;    // 16位窗口大小
+	uint16_t tcp_check;     // 16校验和
+	uint16_t tcp_urg_ptr;   // 16位紧急指针
+}dpi_tcp_head, *dpi_tcp_head_ptr;
+
+
+typedef struct _dpi_result
+{
+    void* pcap_handle;       // pcap文件指针
+
+//===========链路层(以太网)==========
+    uint32_t ether_count;   // 以太坊报文数量
+
+//===========网络层(IP、ARP、RARP和IGMP)==========
+    uint32_t ip_count;      // IP报文数量
+
+//===========传输层(ICMP、TCP和UDP)==========
+    uint32_t tcp_count;    // TCP报文数量
+    uint32_t udp_count;     // udp报文数量
+    uint32_t icpm_count;    // icpm
+
+}dpi_result, *dpi_result_ptr;
 
 typedef struct _dpi_pkt
 {
@@ -48,11 +86,16 @@ typedef struct _dpi_pkt
     uint32_t  ether_len;    // 以太网层包长度
     dpi_eth_head* eth_head_ptr;     // 以太网层包头地址
 
-//===========网络层(IP、ICMP和IGMP)==========
+//===========网络层(IP、ARP、RARP和IGMP)==========
     uint32_t ip_len;
     dpi_ip_head* ip_head_ptr;
-}dpi_pkt, *dpi_pkt_ptr;
 
+
+//===========传输层(ICMP、TCP和UDP)==========
+    uint32_t tcp_len;
+    dpi_tcp_head* tcp_head_ptr;
+
+}dpi_pkt, *dpi_pkt_ptr;
 
 /* dpi初始化,打开cap文件
 @pcap_filename: cap文件路径
@@ -94,5 +137,9 @@ u_int32_t analysis_ether(dpi_pkt* pkt_ptr, void* ether_buffer,  uint32_t ether_l
     返回值: 网络层报文类型
 */
 u_int32_t analysis_ip(dpi_pkt* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  dpi_result* res_ptr);
+
+u_int32_t analysis_tcp(dpi_pkt* pkt_ptr, void* tcp_buffer,  uint32_t tcp_len,  dpi_result* res_ptr);
+
+
 #endif
 
