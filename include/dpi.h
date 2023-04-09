@@ -8,6 +8,7 @@
 #define  ETH_P_RARP 0x8035  //返向地址解析协议(Reverse Address Resolution Protocol)
 #define  ETH_P_IPV6 0x86DD  //IPV6协议
 
+
 // 以太网头
 typedef struct _dpi_eth_head
 {
@@ -89,7 +90,6 @@ typedef struct _dpi_pkt
 //===========网络层(IP、ARP、RARP和IGMP)==========
     uint32_t ip_len;
     dpi_ip_head* ip_head_ptr;
-
 
 //===========传输层(ICMP、TCP和UDP)==========
     uint32_t tcp_len;
