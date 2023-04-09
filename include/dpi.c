@@ -168,7 +168,6 @@ u_int32_t analysis_ip(dpi_pkt* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  dpi_
     printf("    ipVer:%x ipHeadLen:%d ipLen:%d ipID:%.4x proto:%d ipSrc:%s ipDest:%s \n", 
        ip_version, ip_head_len, ipdate_len, ipdate_id, proto, src_addr, des_addr);
 
-    
     switch (proto)
     {
     case IPPROTO_ICMP:    //ICMP：1
@@ -218,4 +217,5 @@ u_int32_t analysis_tcp(dpi_pkt* pkt_ptr, void* tcp_buffer,  uint32_t tcp_len,  d
     printf("        Sport:%d Dport:%d Seq:%ld Ack:%ld\n", sport, dport, seq, ack);
 
     return htons(tcp_head_ptr->tcp_seq);
+
 }
