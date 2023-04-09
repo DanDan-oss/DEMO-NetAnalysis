@@ -78,6 +78,7 @@ u_int32_t analysis_ether(dpi_pkt* pkt_ptr, void* ether_buffer,  uint32_t ether_l
     }
 
     dpi_eth_head* eth_head_ptr = pkt_ptr->eth_head_ptr = (dpi_eth_head*)ether_buffer;
+
     pkt_ptr->ether_len =  ether_len;
     /*
     // 以太网帧长度 = 网络层长度 + 以太网头长度
@@ -141,6 +142,7 @@ u_int32_t analysis_ip(dpi_pkt* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  dpi_
     dpi_ip_head* ip_head_ptr= pkt_ptr->ip_head_ptr = ip_buffer;
     pkt_ptr->ip_len = ip_len;
 
+
     // 网络字节序转主机字节序 之后打印
     // IP版本号, IPV4，IPV6
     u_int8_t ip_version = ip_head_ptr->ip_version;
@@ -168,7 +170,6 @@ u_int32_t analysis_ip(dpi_pkt* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  dpi_
     printf("    ipVer:%x ipHeadLen:%d ipLen:%d ipID:%.4x proto:%d ipSrc:%s ipDest:%s \n", 
        ip_version, ip_head_len, ipdate_len, ipdate_id, proto, src_addr, des_addr);
 
-    
     switch (proto)
     {
     case IPPROTO_ICMP:    //ICMP：1

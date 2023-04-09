@@ -8,6 +8,7 @@
 #define  ETH_P_RARP 0x8035  //返向地址解析协议(Reverse Address Resolution Protocol)
 #define  ETH_P_IPV6 0x86DD  //IPV6协议
 
+
 // 以太网头
 typedef struct _dpi_eth_head
 {
@@ -46,6 +47,7 @@ typedef struct _dpi_ip_head
     uint16_t ip_check;    //IP header校验和,如果接收端收到报文进行计算如果校验和错误,直接丢弃。
     uint32_t ip_saddr;    //源IP地址
     uint32_t ip_daddr;    //目的IP地址
+
 }dpi_ip_head, *dpi_ip_head_ptr;
 
 typedef struct _dpi_tcp_head
@@ -90,12 +92,12 @@ typedef struct _dpi_pkt
     uint32_t ip_len;
     dpi_ip_head* ip_head_ptr;
 
-
 //===========传输层(ICMP、TCP和UDP)==========
     uint32_t tcp_len;
     dpi_tcp_head* tcp_head_ptr;
 
 }dpi_pkt, *dpi_pkt_ptr;
+
 
 /* dpi初始化,打开cap文件
 @pcap_filename: cap文件路径
