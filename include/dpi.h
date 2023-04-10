@@ -31,16 +31,18 @@ typedef struct _dpi_ip_head
     uint16_t ip_tot_len;  //header＋数据 总长度
     uint16_t ip_id;       //IP 报文的唯一id，分片报文的id 相同，便于进行重组
 
-    uint16_t ip_frag_off; //分片编号(标明是否分片)+分片偏移(偏移值/8)
-/*
+    //uint16_t ip_frag_off; //分片编号(标明是否分片)+分片偏移(偏移值/8)
+    
 #if __BYTE_ORDER == __LITTLE_ENDIAN	//大端
-    uint16_t ip_frag_off : 13;    //偏移值
+    uint16_t ip_frag_off_1 : 5;    //偏移值前5位
     uint16_t ip_frag_num : 3;     //分片编号
+    uint16_t ip_frag_off_2 : 8;    //偏移值后8位
 #elif __BYTE_ORDER == __BIG_ENDIAN	// 小端
     uint16_t ip_frag_num : 3;
-    uint16_t ip_frag_off : 13;
+    uint16_t ip_frag_off_1 : 5;
+    uint16_t ip_frag_off_2 : 8; 
 #endif
-*/
+
     uint8_t ip_ttl;       //路由器的跳转数
     uint8_t ip_proto;  //传输层协议, ICMP：1，TCP：6，UDP：17
     uint16_t ip_check;    //IP header校验和,如果接收端收到报文进行计算如果校验和错误,直接丢弃。
@@ -55,10 +57,31 @@ typedef struct _dpi_tcp_head
     uint32_t tcp_seq;
     uint32_t tcp_ack;
 
-    uint16_t flags;     // 4位头首部长度;  6位保留位; 6位标志位(URG、ACK、PSH、PST、SYN、FIN);
+    //uint16_t flags;     // 4位头首部长度;  6位保留位; 6位标志位(URG、ACK、PSH、PST、SYN、FIN);
+#if __BYTE_ORDER == __LITTLE_ENDIAN	//大端
+	uint16_t res1:4;    // 6位保留位中的前4位
+	uint16_t tcp_head_Len : 4;    // 4位头首部长度
+	uint16_t fin:1;
+	uint16_t syn:1;
+	uint16_t rst:1;
+	uint16_t psh:1;
+	uint16_t ack:1;
+	uint16_t urg:1;
+	uint16_t res2:2;    // 6位保留位中的后2位
+#elif __BYTE_ORDER == __BIG_ENDIAN	// 小端
+	uint16_t tcp_head_Len : 4;    // 4位头首部长度
+	uint16_t res1:4;    // 6位保留位中的前4位
+	uint16_t res2:2;    // 6位保留位中的后2位
+	uint16_t urg:1;
+	uint16_t ack:1;
+	uint16_t psh:1;
+	uint16_t rst:1;
+	uint16_t syn:1;
+	uint16_t fin:1;
+#endif
 
-	uint16_t tcp_window;    // 16位窗口大小
-	uint16_t tcp_check;     // 16校验和
+	uint16_t tcp_window;    // 16位滑动窗口大小
+	uint16_t tcp_check;     // 16位TCP头校验和
 	uint16_t tcp_urg_ptr;   // 16位紧急指针
 }dpi_tcp_head, *dpi_tcp_head_ptr;
 

@@ -116,7 +116,7 @@ u_int32_t analysis_ether(dpi_pkt* pkt_ptr, void* ether_buffer,  uint32_t ether_l
     // IP报文
     if(ETH_P_IP  == type)
     {
-        if(NULL != res_ptr)
+        if(res_ptr)
             ++res_ptr->ip_count;
         
         // IP报文长度 = 以太网长度 - 以太网头长度(14字节)
@@ -152,6 +152,8 @@ u_int32_t analysis_ip(dpi_pkt* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  dpi_
     uint16_t ipdate_id = ntohs(ip_head_ptr->ip_id);
     // 网络层协议, ICMP：1，TCP：6，UDP：17
     uint8_t proto = ip_head_ptr->ip_proto;
+    // 分片编号
+    uint8_t ip_fragnum = ip_head_ptr->ip_frag_num;
     // IP地址
     u_int8_t src_addr[20] = {0};
     u_int8_t des_addr[20] = {0};
@@ -172,22 +174,25 @@ u_int32_t analysis_ip(dpi_pkt* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  dpi_
     switch (proto)
     {
     case IPPROTO_ICMP:    //ICMP：1
-        ++res_ptr->icpm_count;
-
+        if(res_ptr)
+            ++res_ptr->icpm_count;
         break;
+
     case IPPROTO_TCP:    //TCP：6
-        ++res_ptr->tcp_count;
+
+        if(res_ptr)
+            ++res_ptr->tcp_count;
 
         // TCP报文长度 = IP长度 - IP头长度(20字节)
-        u_int32_t tcp_len = ip_len - sizeof(dpi_tcp_head);
+        u_int32_t tcp_len = ip_len - ip_head_len;
         // TCP头地址 = IP地址 + IP头长度
-        dpi_tcp_head* tcp_buffer = ( dpi_tcp_head*)((u_int8_t*)ip_head_ptr + sizeof(dpi_tcp_head));
+        dpi_tcp_head* tcp_buffer = ( dpi_tcp_head*)((u_int8_t*)ip_head_ptr + ip_head_len);
         analysis_tcp(pkt_ptr, tcp_buffer, tcp_len, res_ptr);
-
-        
         break;
+
     case IPPROTO_UDP:   // UDP：17
-        ++res_ptr->udp_count;
+        if(res_ptr)
+            ++res_ptr->udp_count;
         break;
     default:    // 其他协议
         break;
@@ -211,11 +216,10 @@ u_int32_t analysis_tcp(dpi_pkt* pkt_ptr, void* tcp_buffer,  uint32_t tcp_len,  d
     uint16_t dport = htons(tcp_head_ptr->tcp_dport);
     uint32_t seq = htonl(tcp_head_ptr->tcp_seq);
     uint32_t ack = htonl(tcp_head_ptr->tcp_ack);
-    uint16_t tcp_hand_len = (ntohs(tcp_head_ptr->flags)>>12) *4;
+    uint16_t tcp_hand_len = tcp_head_ptr->tcp_head_Len * 4;
     uint16_t check = htons(tcp_head_ptr->tcp_check);
 
-
-    printf("        Sport:%d Dport:%d Seq:%ld Ack:%ld\n", sport, dport, seq, ack);
+    printf("        Sport:%d Dport:%d Seq:%ld Ack:%ld \n", tcp_hand_len, sport, dport, seq, ack);
 
     return htons(tcp_head_ptr->tcp_seq);
 }
