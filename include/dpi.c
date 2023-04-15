@@ -40,6 +40,7 @@ void dpi_loop(dpi_result* res_ptr)
     if(NULL == pcap)
         return;
     memset(res_ptr, 0, sizeof(dpi_result));
+    res_ptr->pcap_handle = pcap;
     // typedef void (*pcap_handler)(u_char *, const struct pcap_pkthdr *, const u_char *);
     pcap_loop(pcap, 0, &pcap_callback, (u_int8_t*)res_ptr);
     printf("数据处理: 以太网包数量有%d\n", res_ptr->ether_count);
@@ -47,7 +48,12 @@ void dpi_loop(dpi_result* res_ptr)
     printf("数据处理: ICPM包数量有%d\n", res_ptr->icpm_count);
     printf("数据处理: TCP包数量有%d\n", res_ptr->tcp_count);
     printf("数据处理: UDP包数量有%d\n", res_ptr->udp_count);
-     res_ptr->pcap_handle = pcap;
+    for(int i=0; i<PROTOCOL_TCP_MAX; ++i)
+    {
+        printf("数据处理: %s包数量有%d\n", protocl_tcp_string[i], res_ptr->tcp_proto_count[i]);
+    }
+        
+    
     return;
 }
 

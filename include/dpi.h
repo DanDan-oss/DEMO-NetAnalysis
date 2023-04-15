@@ -1,8 +1,17 @@
 #ifndef _DEF_H
-#define _DEF_H
+#define _DEF_H 1
 
 #include <pcap/pcap.h>
-#include "proto.h"
+#include "proto_datalink.h"
+#include "proto_network.h"
+#include "proto_transport.h"
+#include "proto_application.h"
+
+#define  ETH_P_IP 0x0800 //IP协议
+#define  ETH_P_ARP 0x0806  //地址解析协议(Address Resolution Protocol)
+#define  ETH_P_RARP 0x8035  //返向地址解析协议(Reverse Address Resolution Protocol)
+#define  ETH_P_IPV6 0x86DD  //IPV6协议
+
 
 // dpi报文计数器
 typedef struct _dpi_result
@@ -19,6 +28,9 @@ typedef struct _dpi_result
     uint32_t tcp_count;    // TCP报文数量
     uint32_t udp_count;     // udp报文数量
     uint32_t icpm_count;    // icpm
+
+//===========应用层==========
+    uint32_t tcp_proto_count[PROTOCOL_TCP_MAX];
 
 }dpi_result, *dpi_result_ptr;
 
@@ -39,6 +51,8 @@ typedef struct _dpi_pkt
     dpi_tcp_head* tcp_head_ptr;
 
 //===========应用层协议(HTTP、SSH和FTP)==========
+    uint32_t ssh_len;
+    void* ssh_head_ptr;
 
 }dpi_pkt, *dpi_pkt_ptr;
 
