@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 	dpi_result_ptr res_ptr = NULL;
 
 	// 初始化pcap文件
-
+	
 	if(2 ==argc)
 		res_ptr = dpi_init(argv[1]);
 	else
