@@ -54,6 +54,7 @@ typedef struct _dpi_pkt
     uint32_t ssh_len;
     void* ssh_head_ptr;
 
+
 }dpi_pkt, *dpi_pkt_ptr;
 
 
