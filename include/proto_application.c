@@ -65,7 +65,6 @@ u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void
         }
     }
 
-
     return 0;
 }
 
