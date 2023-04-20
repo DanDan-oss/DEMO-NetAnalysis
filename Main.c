@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "dpi.h"
+#include "./utils/dpi_list.h"
 
 #define PCAP_FILE_PATH "../pcap/test.pcap"
 
@@ -23,5 +24,9 @@ int main(int argc, char* argv[])
 	// 释放pcap文件资源
 	dpi_fini(res_ptr);
 	
+	// 测试链表
+	//proto_list_t* list = proto_list_create();
+	//proto_list_delete(list);
+	//printf("哈哈");
 	return 0;
 }

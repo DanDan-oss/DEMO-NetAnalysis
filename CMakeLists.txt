@@ -1,4 +1,5 @@
 include_directories(./include)
 file(GLOB SRC_FILE "./include/*.c")
-add_executable(dpi.out ./Main.c ${SRC_FILE})
+file(GLOB UTIL_LIST "./utils/*.c")
+add_executable(dpi.out ./Main.c ${SRC_FILE}  ${UTIL_LIST})
 target_link_libraries(dpi.out pcap)
