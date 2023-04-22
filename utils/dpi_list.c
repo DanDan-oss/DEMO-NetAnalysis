@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-
 void ProtoDubgPrint()
 {
     
@@ -107,7 +106,7 @@ int proto_list_addNode(proto_list_t* list, void* data)
     // 新节点的前节点的后节点=新节点, 新节点的后节点(头节点)的前节点=新节点
     new_node->Back->Next = new_node;
     new_node->Next->Back = new_node;
-    
+
     list->node_count++;
     return list->node_count;
 }
@@ -116,8 +115,7 @@ int proto_list_addNode(proto_list_t* list, void* data)
 int proto_list_delNode(proto_list_t* list, void* data)
 {
     proto_node_t* node_head = NULL;
-    proto_node_t* node_last = NULL;
-
+    proto_node_t* node_last = NULL; 
     if(NULL == list || NULL == data)
         return 0;
 

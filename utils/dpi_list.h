@@ -11,7 +11,6 @@ typedef struct _proto_node
     struct _proto_node* Next;
 }proto_node_t, *proto_node_ptr;
 
-
 // 链表
 typedef struct _proto_list
 {

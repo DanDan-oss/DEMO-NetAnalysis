@@ -27,5 +27,9 @@ int main(int argc, char* argv[])
 	// 测试链表
 	ProtoDubgPrint();
 	
+	// 测试链表
+	//proto_list_t* list = proto_list_create();
+	//proto_list_delete(list);
+	//printf("哈哈");
 	return 0;
 }
