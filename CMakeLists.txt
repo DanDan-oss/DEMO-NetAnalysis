@@ -1,3 +1,5 @@
+project("newanalysis")
+cmake_minimum_required(VERSION 3.0)
 include_directories(./include)
 file(GLOB SRC_FILE "./include/*.c")
 file(GLOB UTIL_LIST "./utils/*.c")
