@@ -3,6 +3,7 @@
 
 #include "dpi.h"
 
+
 dpi_result* dpi_init(const uint8_t* pcap_filename)
 {
     char ebuf[PCAP_ERRBUF_SIZE] = {0};  // pcap错误消息存放buffer
@@ -41,8 +42,13 @@ void dpi_loop(dpi_result* res_ptr)
         return;
     memset(res_ptr, 0, sizeof(dpi_result));
     res_ptr->pcap_handle = pcap;
+
+    // 初始化protolist
+    init_connect_ipproto_list();
+
     // typedef void (*pcap_handler)(u_char *, const struct pcap_pkthdr *, const u_char *);
     pcap_loop(pcap, 0, &pcap_callback, (u_int8_t*)res_ptr);
+
     printf("数据处理: 以太网包数量有%d\n", res_ptr->ether_count);
 	printf("数据处理: IP包数量有%d\n", res_ptr->ip_count);
     printf("数据处理: ICPM包数量有%d\n", res_ptr->icpm_count);
@@ -52,7 +58,9 @@ void dpi_loop(dpi_result* res_ptr)
     {
         printf("数据处理: %s包数量有%d\n", protocl_tcp_string[i], res_ptr->tcp_proto_count[i]);
     }
-        
+
+    // 释放 protolist
+    fini_connect_ipproto_list();
     
     return;
 }
