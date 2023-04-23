@@ -6,6 +6,7 @@
 #include "proto_network.h"
 #include "proto_transport.h"
 #include "proto_application.h"
+#include "proto_list.h"
 
 #define  ETH_P_IP 0x0800 //IP协议
 #define  ETH_P_ARP 0x0806  //地址解析协议(Address Resolution Protocol)
@@ -55,7 +56,6 @@ typedef struct _dpi_pkt
     void* ssh_head_ptr;
 
 }dpi_pkt, *dpi_pkt_ptr;
-
 
 /* dpi初始化,打开cap文件
 @pcap_filename: cap文件路径

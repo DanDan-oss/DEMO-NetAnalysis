@@ -3,34 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-void ProtoDubgPrint()
-{
-    
-	// 测试链表
-
-	int* arr[10] = {0};
-	for(int i=0; i<10; ++i)
-	{
-		arr[i] = malloc(sizeof(int)*10);
-		arr[i][0] = i+1;
-	}
-
-	proto_list_t* list = proto_list_create();
-	for(int i=0; i<10; ++i)
-		proto_list_addNode(list, arr[i]);
-	
-	ProtoListPrint(list);
-
-	proto_list_delNode(list, arr[4]);
-
-	printf("\n\n");
-	ProtoListPrint(list);
-
-	proto_list_delete(list);
-	printf("哈哈");
-}
-
-
 // 创建一个链表
 proto_list_t* proto_list_create()
 {
@@ -80,6 +52,7 @@ void proto_list_delete(proto_list_t* list)
     if(node_head->data)
         free(node_head->data);
     free(node_head);
+    list->head = NULL;
     free(list);
     return;
 }
@@ -130,6 +103,36 @@ int proto_list_delNode(proto_list_t* list, void* data)
             continue;
         }
             
+        node_last->Back->Next = node_last->Next;
+        node_last->Next->Back = node_last->Back; 
+
+	    if(node_last->data)
+            free(node_last->data);
+        free((node_last));
+        list->node_count--;
+        return 1;
+    }
+    return 0;
+}
+
+int proto_list_delNode_compar(proto_list_t* list, compar_node_callback compar_callback, void* data)
+{
+    proto_node_t* node_head = NULL;
+    proto_node_t* node_last = NULL; 
+    if(NULL == list || NULL == data || NULL == compar_callback)
+        return 0;
+
+    node_head = list->head;
+    node_last = node_head->Next;
+
+    while (node_last != node_head && NULL != node_last )
+    {
+        
+	    if(0 != compar_callback(node_last->data, data))
+        {
+            node_last = node_last->Next;
+            continue;
+        }
             
         node_last->Back->Next = node_last->Next;
         node_last->Next->Back = node_last->Back; 
@@ -137,9 +140,72 @@ int proto_list_delNode(proto_list_t* list, void* data)
 	    if(node_last->data)
             free(node_last->data);
         free((node_last));
+        list->node_count--;
         return 1;
     }
     return 0;
+}
+
+void ProtoListPrint(proto_list_t* list, list_print_callback callback)
+{
+    proto_node_t* node_head = NULL;
+    proto_node_t* node_last = NULL;
+
+    if(NULL == list->head || NULL == list)
+        return;
+    
+    node_head = list->head;
+    node_last = node_head->Next;
+    while (node_head != node_last && NULL != node_last)
+    {
+        proto_node_t* temp = node_last;
+        node_last = node_last->Next;
+
+        if(NULL == temp->data)
+            continue;
+
+        callback(temp->data);
+    }
+    return ;
+}
+
+
+
+
+//===================================================
+// 测试
+void print_test(void* node)
+{
+    int* str = (int*)node;
+    printf("straddr:%p, value:%d\n", str, *str);    
+
+}
+
+void ProtoDubgPrint()
+{
+	// 测试链表
+	int* arr[10] = {0};
+	for(int i=0; i<10; ++i)
+	{
+		arr[i] = malloc(sizeof(int)*10);
+		arr[i][0] = i+1;
+	}
+
+	proto_list_t* list = proto_list_create();
+	for(int i=0; i<10; ++i)
+		proto_list_addNode(list, arr[i]);
+	
+	ProtoListPrint(list, print_test);
+
+	proto_list_delNode(list, arr[4]);
+
+	printf("\n\n");
+	ProtoListPrint(list, print_test);
+
+	proto_list_delete(list);
+
+    ProtoListPrint(list, print_test);
+	printf("哈哈\n");
 }
 
 void ProtoListPrint(proto_list_t* list)

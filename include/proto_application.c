@@ -1,5 +1,7 @@
 #include "dpi.h"
 #include "proto_application.h"
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 protocl_tcp_analyze_func_t protocl_analyze_funcs[PROTOCOL_TCP_MAX]=
@@ -23,6 +25,7 @@ u_int32_t analysis_http(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  voi
 
 u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void* res_ptr)
 {
+    dpi_connection_t* tcp = NULL;
     /* TODO: 如何判断一个数据是不是ssh
         1、SSH一般默认端口是22,并且应为要加密,长度应该是长度大于10(不一定准,测试长度大于7得出的结果和wirshark一样)
         2、一般开始链接的时候,有数据头有SSH-2.0版本的信息,可以比较字符串SSH-,并且建立连接后,之后这两个IP的这两个端口通讯一定是ssh
@@ -39,6 +42,18 @@ u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void
         {
              ((dpi_pkt*)pkt_ptr)->ssh_head_ptr = app_buffer;
              ((dpi_pkt*)pkt_ptr)->ssh_len = tcp_len;
+        }
+        // 匹配到字符串 SSH-,说明之后这个ip和端口都是ssh包,添加进ssh链表
+        if(NULL != ((dpi_pkt*)pkt_ptr)->ip_head_ptr && NULL != ((dpi_pkt*)pkt_ptr)->tcp_head_ptr)
+        {
+            tcp = malloc(sizeof(dpi_connection_t));
+            memset(tcp, 0, sizeof(dpi_connection_t));
+        
+            tcp->ipv4.src_port = ((dpi_pkt*)pkt_ptr)->tcp_head_ptr->tcp_sport;
+            tcp->ipv4.dst_Port = ((dpi_pkt*)pkt_ptr)->tcp_head_ptr->tcp_dport;
+            tcp->ipv4.dst_ip = ((dpi_pkt*)pkt_ptr)->ip_head_ptr->ip_daddr;
+            tcp->ipv4.src_ip = ((dpi_pkt*)pkt_ptr)->ip_head_ptr->ip_saddr;
+            add_connect_ipproto_list(tcp, SSH);
         }
         if(NULL != res_ptr)
             ++ ((dpi_result*)res_ptr)->tcp_proto_count[SSH];
