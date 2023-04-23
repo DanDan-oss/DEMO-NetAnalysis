@@ -39,6 +39,7 @@ int proto_list_delNode_compar(proto_list_t* list, compar_node_callback call_back
 typedef void (*list_print_callback)(void* node);
 void ProtoListPrint(proto_list_t* list, list_print_callback callback);
 
+
 // 测试链表结构
 void ProtoDubgPrint();
 

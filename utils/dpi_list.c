@@ -208,3 +208,26 @@ void ProtoDubgPrint()
 	printf("哈哈\n");
 }
 
+void ProtoListPrint(proto_list_t* list)
+{
+    proto_node_t* node_head = NULL;
+    proto_node_t* node_last = NULL;
+
+    if(NULL == list)
+        return;
+    
+    node_head = list->head;
+    node_last = node_head->Next;
+    while (node_head != node_last && NULL != node_last)
+    {
+        proto_node_t* temp = node_last;
+        node_last = node_last->Next;
+
+        if(NULL == temp->data)
+            continue;
+
+        int * a = temp->data;
+        printf("printf list: %d\n", *a);
+    }
+    return ;
+}
