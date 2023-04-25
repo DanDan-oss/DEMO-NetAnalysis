@@ -146,6 +146,29 @@ int proto_list_delNode_compar(proto_list_t* list, compar_node_callback compar_ca
     return 0;
 }
 
+void* proto_list_findNode_compar(proto_list_t* list, compar_node_callback call_back, void* data)
+{
+    proto_node_t* node_head = NULL;
+    proto_node_t* node_last = NULL; 
+    if(NULL == list || NULL == data || NULL == call_back)
+        return 0;
+
+    node_head = list->head;
+    node_last = node_head->Next;
+
+    while (node_last != node_head && NULL != node_last )
+    {
+        
+	    if(0 != call_back(node_last->data, data))
+        {
+            node_last = node_last->Next;
+            continue;
+        }
+        return node_last;
+    }
+    return NULL;
+}
+
 void ProtoListPrint(proto_list_t* list, list_print_callback callback)
 {
     proto_node_t* node_head = NULL;
@@ -168,6 +191,8 @@ void ProtoListPrint(proto_list_t* list, list_print_callback callback)
     }
     return ;
 }
+
+
 
 
 

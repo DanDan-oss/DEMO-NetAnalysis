@@ -1,5 +1,8 @@
 
 #include "proto_list.h"
+#include <string.h>
+#include <string.h>
+
 
 
 proto_list_t* g_ipproto_connections[PROTOCOL_TCP_MAX] = {0};
@@ -40,6 +43,18 @@ uint32_t del_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto)
         return -1;
 
     proto_list_delNode_compar(g_ipproto_connections[proto], compar, connect);
+}
+
+uint32_t find_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto)
+{
+    if(proto > PROTOCOL_TCP_MAX || NULL == connect)
+        return -1;
+
+    void* data = proto_list_findNode_compar(g_ipproto_connections[proto], compar, connect);
+
+    if(NULL == data)
+        return 0;
+    return 1;
 }
 
 
