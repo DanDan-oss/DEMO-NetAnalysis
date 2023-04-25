@@ -33,16 +33,19 @@ void init_connect_ipproto_list();
 */
 void fini_connect_ipproto_list();
 
+// 比较两个节点ip、port四元组是否相等的回调函数
+uint32_t compar(void* list_node, void* data);
+
 /* 向connect协议组中的链表添加一个链接信息
-    
 */
 uint32_t add_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto);
 
-// 比较两个节点ip、port四元组是否相等的回调函数
-uint32_t compar(void* list_node, void* data);
 /* 向connect协议组中的链表删除一个链接信息
- 
 */
 uint32_t del_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto);
+
+/* 向connect协议组中的链表查找一个链接信息
+*/
+uint32_t find_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto);
 
 #endif
