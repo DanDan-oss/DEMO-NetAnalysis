@@ -29,8 +29,7 @@ int proto_list_addNode(proto_list_t* list, void* data);
 // 移除某一个节点
 int proto_list_delNode(proto_list_t* list, void* data);
 
-void ProtoListPrint(proto_list_t* list);
-
+typedef uint32_t (*compar_node_callback)(void* list_node, void* data);
 /* 移除某一个元素,通过回调函数
     回调函数中自行比较数据结构,相等返回0,不相等返回非0
 */
@@ -42,5 +41,6 @@ void* proto_list_findNode_compar(proto_list_t* list, compar_node_callback call_b
 typedef void (*list_print_callback)(void* node);
 void ProtoListPrint(proto_list_t* list, list_print_callback callback);
 
+// 测试链表结构
 void ProtoDubgPrint();
 #endif
