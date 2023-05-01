@@ -48,4 +48,9 @@ uint32_t del_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto)
 */
 uint32_t find_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto);
 
+/* 遍历打印四元组
+*/
+void print_ipproto_list(void* node);
+uint32_t show_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto);
+
 #endif

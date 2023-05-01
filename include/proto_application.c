@@ -52,7 +52,7 @@ u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void
             ((dpi_pkt *)pkt_ptr)->ssh_len = tcp_len;
         }
         // 匹配到字符串 SSH-,说明之后这个ip和端口都是ssh包,添加进ssh链表
-        if(0<find_connect_ipproto_list(&tcp, SSH))
+        if(0 == find_connect_ipproto_list(&tcp, SSH))
             add_connect_ipproto_list(&tcp, SSH);
         if (NULL != res_ptr)
             ++((dpi_result *)res_ptr)->tcp_proto_count[SSH];
@@ -62,14 +62,14 @@ u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void
     // 指向tcp头的指针是不是为空,并且字段大于10
     if (NULL != ((dpi_pkt *)pkt_ptr)->tcp_head_ptr && NULL != pkt_ptr && 10 < tcp_len)
     {
-        u_int32_t port = ntohs(22);
+        u_int32_t port = htons(22);
 
         // 判断通信双方端口有没有22+通过长度判断
         if (port == ((dpi_pkt *)pkt_ptr)->tcp_head_ptr->tcp_sport || port == ((dpi_pkt *)pkt_ptr)->tcp_head_ptr->tcp_dport)
         {
             ((dpi_pkt *)pkt_ptr)->ssh_head_ptr = app_buffer;
             ((dpi_pkt *)pkt_ptr)->ssh_len = tcp_len;
-            if(0<find_connect_ipproto_list(&tcp, SSH))
+            if(0 == find_connect_ipproto_list(&tcp, SSH))
                 add_connect_ipproto_list(&tcp, SSH);
             if (NULL != res_ptr)
                 ++((dpi_result *)res_ptr)->tcp_proto_count[SSH];

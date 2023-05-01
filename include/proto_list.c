@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 proto_list_t* g_ipproto_connections[PROTOCOL_TCP_MAX] = {0};
 
@@ -55,6 +56,26 @@ uint32_t find_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto
     if(NULL == data)
         return 0;
     return 1;
+}
+
+
+void print_ipproto_list(void* node)
+{
+    uint8_t srcAddr[20] = {0};
+    uint8_t destAddr[20] = {0};
+    ipv4_port_pair_t* connect = node;
+    
+    inet_ntop(AF_INET, (const u_int8_t*)&(connect->src_ip), srcAddr, sizeof(srcAddr));
+    inet_ntop(AF_INET, (const u_int8_t*)&(connect->dst_ip), destAddr, sizeof(destAddr));
+    printf("    srcAddr:%s, srcPort:%d , DestAddr:%s, DestPort:%d\n", srcAddr, ntohs(connect->src_port),
+    destAddr, ntohs(connect->dst_Port));    
+    return;
+}
+
+uint32_t show_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto)
+{
+    printf("show(%d) %s\n", proto, protocl_tcp_string[proto]);
+    ProtoListPrint(connect, print_ipproto_list);
 }
 
 
