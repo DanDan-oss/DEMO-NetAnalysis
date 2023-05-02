@@ -55,6 +55,9 @@ typedef struct _dpi_pkt
     uint32_t ssh_len;
     void* ssh_head_ptr;
 
+    uint32_t http_len;
+    void* http_head_ptr;
+
 }dpi_pkt, *dpi_pkt_ptr;
 
 /* dpi初始化,打开cap文件
