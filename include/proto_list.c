@@ -43,21 +43,21 @@ uint32_t del_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto)
 {
     if(proto > PROTOCOL_TCP_MAX || NULL == connect)
         return -1;
-
-    proto_list_delNode_compar(g_ipproto_connections[proto], compar, connect);
+    return proto_list_delNode_compar(g_ipproto_connections[proto], compar, connect);
 }
 
-uint32_t find_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto)
+dpi_connection_t* find_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto)
 {
     if(proto > PROTOCOL_TCP_MAX || NULL == connect)
-        return -1;
-    void* data = proto_list_findNode_compar(g_ipproto_connections[proto], compar, connect);
-
-    if(NULL == data)
-        return 0;
-    return 1;
+        return NULL;
+    return proto_list_findNode_compar(g_ipproto_connections[proto], compar, connect);
 }
 
+u_int32_t show_proto_all()
+{
+    for(int i=0; i<PROTOCOL_TCP_MAX; ++i)
+        show_connect_ipproto_list(g_ipproto_connections[i], i);
+}
 
 void print_ipproto_list(void* node)
 {
@@ -72,9 +72,9 @@ void print_ipproto_list(void* node)
     return;
 }
 
-uint32_t show_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto)
+uint32_t show_connect_ipproto_list(proto_list_t* connect, TCP_PROTOCOL proto)
 {
-    printf("show(%d) %s\n", proto, protocl_tcp_string[proto]);
+    printf("showData(%d:%s)\n", proto, protocl_tcp_string[proto]);
     ProtoListPrint(connect, print_ipproto_list);
 }
 

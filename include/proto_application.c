@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// TCP应用层协议解析函数数组
 protocl_tcp_analyze_func_t protocl_analyze_funcs[PROTOCOL_TCP_MAX]=
 {
     analysis_http,
@@ -11,18 +12,55 @@ protocl_tcp_analyze_func_t protocl_analyze_funcs[PROTOCOL_TCP_MAX]=
     analysis_ftp
 };
 
+// TCP协议数组名
 const char* protocl_tcp_string[PROTOCOL_TCP_MAX]=
 {
     PROTO_TCP_STRING
 };
 
-//  TCP协议下
+// http报文类型
+enum _HTTP_REQUEST_MOTHOD
+{
+    GET = 0,
+    HEAD,
+    POST,
+    OPTIONS,
+    PUT,
+    DELETE,
+    TRACE,
+    CONNECT,
+    HTTP_REQUEST_MAX
+}HTTP_REQUEST_MOTHOD;
+
+const char* http_request_mothod_strings[HTTP_REQUEST_MAX]=
+{
+    "GET",
+    "HEAD",
+    "POST",
+    "OPTIONS",
+    "PUT",
+    "DELETE",
+    "TRACE",
+    "CONNECT",
+};
+
+
+/* 处理HTTP报文协议
+    @return
+        0 处理成功
+        1 处理失败
+*/ 
 u_int32_t analysis_http(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void* res_ptr)
 {
-    return 0;
+    
+    return 1;
 }
 
-
+/* 处理SSH报文协议
+    @return
+        0 处理成功
+        1 处理失败
+*/ 
 u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void* res_ptr)
 {
     dpi_connection_t tcp = {0};
@@ -32,7 +70,7 @@ u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void
         3、数据段中有SSH-字段
     */
     if( NULL == app_buffer)
-        return 0;
+        return 1;
 
     if (NULL != ((dpi_pkt *)pkt_ptr)->ip_head_ptr && NULL != ((dpi_pkt *)pkt_ptr)->tcp_head_ptr)
     {
@@ -56,7 +94,7 @@ u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void
             add_connect_ipproto_list(&tcp, SSH);
         if (NULL != res_ptr)
             ++((dpi_result *)res_ptr)->tcp_proto_count[SSH];
-        return 1;
+        return 0;
     }
 
     // 指向tcp头的指针是不是为空,并且字段大于10
@@ -73,7 +111,7 @@ u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void
                 add_connect_ipproto_list(&tcp, SSH);
             if (NULL != res_ptr)
                 ++((dpi_result *)res_ptr)->tcp_proto_count[SSH];
-            return 1;
+            return 0;
         }
     }
 
@@ -84,13 +122,14 @@ u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void
         ((dpi_pkt *)pkt_ptr)->ssh_len = tcp_len;
         if (NULL != res_ptr)
             ++((dpi_result *)res_ptr)->tcp_proto_count[SSH];
-        return 1;
+        return 0;
     }
-    return 0;
+    return 1;
 }
 
 u_int32_t analysis_ftp(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void* res_ptr)
 {
 
-    return 0;
+    return 1;
 }
+

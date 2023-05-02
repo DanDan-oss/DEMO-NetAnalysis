@@ -17,7 +17,11 @@ dpi_result* dpi_init(const uint8_t* pcap_filename)
 		printf("Error, cap file open fail: %s\n", ebuf);
 		return NULL;
 	}
-    result = malloc(sizeof(dpi_result));
+    if(NULL == (result = malloc(sizeof(dpi_result))))
+    {
+        pcap_close(pcap);
+        return NULL;
+    }
     memset(result, 0, sizeof(dpi_result));
     result->pcap_handle = pcap;
     return result;
@@ -58,9 +62,7 @@ void dpi_loop(dpi_result* res_ptr)
     {
         printf("数据处理: %s包数量有%d\n", protocl_tcp_string[i], res_ptr->tcp_proto_count[i]);
     }
-
-    for(int i=0; i<PROTOCOL_TCP_MAX; ++i)
-        show_connect_ipproto_list(g_ipproto_connections[i], i);
+    show_proto_all();
     // 释放 protolist
     fini_connect_ipproto_list();
     

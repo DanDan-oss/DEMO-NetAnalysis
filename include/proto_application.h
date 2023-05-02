@@ -24,10 +24,13 @@ extern protocl_tcp_analyze_func_t protocl_analyze_funcs[PROTOCOL_TCP_MAX];
 // TCP下的应用层协议排列
 extern const char* protocl_tcp_string[PROTOCOL_TCP_MAX];
 
+/* 处理报文协议
+    @return
+        0 处理成功
+        1 处理失败
+*/ 
 u_int32_t analysis_http(void* pkt_ptr, void* tcp_buffer,  uint32_t tcp_len,  void* res_ptr);
 u_int32_t analysis_ssh(void* pkt_ptr, void* tcp_buffer,  uint32_t tcp_len,  void* res_ptr);
 u_int32_t analysis_ftp(void* pkt_ptr, void* tcp_buffer,  uint32_t tcp_len,  void* res_ptr);
-
-
 
 #endif
