@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 proto_list_t* g_ipproto_connections[PROTOCOL_TCP_MAX] = {0};
 
@@ -42,19 +43,39 @@ uint32_t del_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto)
 {
     if(proto > PROTOCOL_TCP_MAX || NULL == connect)
         return -1;
-
-    proto_list_delNode_compar(g_ipproto_connections[proto], compar, connect);
+    return proto_list_delNode_compar(g_ipproto_connections[proto], compar, connect);
 }
 
-uint32_t find_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto)
+dpi_connection_t* find_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto)
 {
     if(proto > PROTOCOL_TCP_MAX || NULL == connect)
-        return -1;
-    void* data = proto_list_findNode_compar(g_ipproto_connections[proto], compar, connect);
+        return NULL;
+    return proto_list_findNode_compar(g_ipproto_connections[proto], compar, connect);
+}
 
-    if(NULL == data)
-        return 0;
-    return 1;
+u_int32_t show_proto_all()
+{
+    for(int i=0; i<PROTOCOL_TCP_MAX; ++i)
+        show_connect_ipproto_list(g_ipproto_connections[i], i);
+}
+
+void print_ipproto_list(void* node)
+{
+    uint8_t srcAddr[20] = {0};
+    uint8_t destAddr[20] = {0};
+    ipv4_port_pair_t* connect = node;
+    
+    inet_ntop(AF_INET, (const u_int8_t*)&(connect->src_ip), srcAddr, sizeof(srcAddr));
+    inet_ntop(AF_INET, (const u_int8_t*)&(connect->dst_ip), destAddr, sizeof(destAddr));
+    printf("    srcAddr:%s, srcPort:%d , DestAddr:%s, DestPort:%d\n", srcAddr, ntohs(connect->src_port),
+    destAddr, ntohs(connect->dst_Port));    
+    return;
+}
+
+uint32_t show_connect_ipproto_list(proto_list_t* connect, TCP_PROTOCOL proto)
+{
+    printf("showData(%d:%s)\n", proto, protocl_tcp_string[proto]);
+    ProtoListPrint(connect, print_ipproto_list);
 }
 
 

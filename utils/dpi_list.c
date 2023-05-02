@@ -110,7 +110,7 @@ int proto_list_delNode(proto_list_t* list, void* data)
             free(node_last->data);
         free((node_last));
         list->node_count--;
-        return 1;
+        return list->node_count;
     }
     return 0;
 }
@@ -127,7 +127,6 @@ int proto_list_delNode_compar(proto_list_t* list, compar_node_callback compar_ca
 
     while (node_last != node_head && NULL != node_last )
     {
-        
 	    if(0 != compar_callback(node_last->data, data))
         {
             node_last = node_last->Next;
@@ -141,7 +140,7 @@ int proto_list_delNode_compar(proto_list_t* list, compar_node_callback compar_ca
             free(node_last->data);
         free((node_last));
         list->node_count--;
-        return 1;
+        return list->node_count;
     }
     return 0;
 }
@@ -158,7 +157,6 @@ void* proto_list_findNode_compar(proto_list_t* list, compar_node_callback call_b
 
     while (node_last != node_head && NULL != node_last )
     {
-        
 	    if(0 != call_back(node_last->data, data))
         {
             node_last = node_last->Next;
@@ -191,9 +189,6 @@ void ProtoListPrint(proto_list_t* list, list_print_callback callback)
     }
     return ;
 }
-
-
-
 
 
 

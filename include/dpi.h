@@ -55,11 +55,16 @@ typedef struct _dpi_pkt
     uint32_t ssh_len;
     void* ssh_head_ptr;
 
+    uint32_t http_len;
+    void* http_head_ptr;
+
 }dpi_pkt, *dpi_pkt_ptr;
 
 /* dpi初始化,打开cap文件
 @pcap_filename: cap文件路径
-return: 打开cap文件失败返回空
+@return: 
+    成功 dpi_result结构指针
+    失败 NULL
 */
 dpi_result* dpi_init(const uint8_t* pcap_filename);
 

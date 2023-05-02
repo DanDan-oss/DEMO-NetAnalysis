@@ -46,7 +46,9 @@ typedef struct _dpi_ip_head
 @ip_buffer: 报文数据
 @ip_len: 报文长度
 @ret_ptr: 累计记录各类报文数量的地址可传NULL
-    返回值: 网络层报文类型
+@return: 
+	解析失败 0
+	成功 网络层报文类型
 */
 u_int32_t analysis_ip(void* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  void* res_ptr);
 

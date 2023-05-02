@@ -21,31 +21,59 @@ typedef struct _dpi_connection
     // 后面可以添加IPV6...
 }dpi_connection_t, *dpi_connection_ptr;
 
+
 extern proto_list_t* g_ipproto_connections[PROTOCOL_TCP_MAX];
-
-/* 初始化tcp协议组链表,当前的协议组PROTO_TCP_STRING
-
-*/
-void init_connect_ipproto_list();
-
-/* 销毁链表
-
-*/
-void fini_connect_ipproto_list();
 
 // 比较两个节点ip、port四元组是否相等的回调函数
 uint32_t compar(void* list_node, void* data);
 
-/* 向connect协议组中的链表添加一个链接信息
+/* 初始化tcp协议组链表,当前的协议组PROTO_TCP_STRING
+@return:
+*/
+void init_connect_ipproto_list();
+
+/* 销毁链表
+@return:
+*/
+void fini_connect_ipproto_list();
+
+/* 向协议组中的链表添加一个链接信息
+@connect: 要存储的四元组(IP+PORT)
+@proto: 协议类型
+@return:
+    失败 -1
+    成功 当前链表中元素个数
 */
 uint32_t add_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto);
 
-/* 向connect协议组中的链表删除一个链接信息
+/* 向协议组中的链表删除一个链接信息
+@connect: 要删除的四元组(IP+PORT)
+@proto: 协议类型
+@return:
+    失败 0或者-1
+    成功 当前链表中元素个数
 */
 uint32_t del_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto);
 
-/* 向connect协议组中的链表查找一个链接信息
+/* 在协议组中的链表查找一个链接信息
+@connect: 要查找的四元组(IP+PORT)
+@proto: 协议类型
+@return:
+    失败 0或者-1
+    成功 节点指针
 */
-uint32_t find_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto);
+dpi_connection_t* find_connect_ipproto_list(dpi_connection_t* connect, TCP_PROTOCOL proto);
+
+/* 遍历打印协议组中所有链表四元组
+*/
+u_int32_t show_proto_all();
+
+/*打印协议组中某个协议的链表四元组
+*/
+uint32_t show_connect_ipproto_list(proto_list_t* connect, TCP_PROTOCOL proto);
+
+/* 打印IP四元组回调函数
+*/
+void print_ipproto_list(void* node);
 
 #endif

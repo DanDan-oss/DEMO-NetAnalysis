@@ -32,8 +32,7 @@ u_int32_t analysis_tcp(void* pkt_ptr, void* tcp_buffer,  uint32_t tcp_len,  void
 
     // TODO: 循环调用TCP应用层支持的协议解析函数
     for(int i=0 ; i<PROTOCOL_TCP_MAX; ++i)
-    {
-        u_int32_t proto = protocl_analyze_funcs[i](pkt_ptr, app_buffer, app_len, res_ptr);
-    }
+        if(0 == protocl_analyze_funcs[i](pkt_ptr, app_buffer, app_len, res_ptr))
+            break;
     return seq;
 }

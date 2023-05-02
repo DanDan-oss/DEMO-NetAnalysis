@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+// TCP应用层协议解析函数数组
 protocl_tcp_analyze_func_t protocl_analyze_funcs[PROTOCOL_TCP_MAX]=
 {
     analysis_http,
@@ -11,18 +12,113 @@ protocl_tcp_analyze_func_t protocl_analyze_funcs[PROTOCOL_TCP_MAX]=
     analysis_ftp
 };
 
+// TCP协议数组名
 const char* protocl_tcp_string[PROTOCOL_TCP_MAX]=
 {
     PROTO_TCP_STRING
 };
 
-//  TCP协议下
+// http报文类型
+#define HTTP_VERSION_1_0 "HTTP/1.0"
+#define HTTP_VERSION_1_1 "HTTP/1.1"
+#define CRLF "\r\n"
+
+enum _HTTP_REQUEST_MOTHOD
+{
+    GET = 0,
+    HEAD,
+    POST,
+    OPTIONS,
+    PUT,
+    DELETE,
+    TRACE,
+    CONNECT,
+    HTTP_REQUEST_MAX
+}HTTP_REQUEST_MOTHOD;
+
+const char* http_request_mothod_strings[HTTP_REQUEST_MAX]=
+{
+    "GET",
+    "HEAD",
+    "POST",
+    "OPTIONS",
+    "PUT",
+    "DELETE",
+    "TRACE",
+    "CONNECT",
+};
+
+
+/* 处理HTTP报文协议
+    @return
+        0 处理成功
+        1 处理失败
+*/ 
 u_int32_t analysis_http(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void* res_ptr)
 {
+    dpi_connection_t tcp = {0};
+
+    if( NULL == app_buffer)
+        return 1;
+
+    // 如果报文长度 < 最长的请求方法长度 + http版本长度 + 空格 + CRLF(\r\n换行),说明它不是http
+    if(tcp_len < strlen(http_request_mothod_strings[CONNECT]) + strlen(HTTP_VERSION_1_0) + strlen(" ") + strlen(CRLF))
+        return 1;
+
+    // TODO: 匹配请求消息 GET <url> HTTP1.1\r\n
+    for(int i=0; i<HTTP_REQUEST_MAX; ++i)
+    {
+        size_t str_len = strlen(http_request_mothod_strings[i]);
+        if(0 != memcmp(app_buffer, http_request_mothod_strings[i], str_len))
+            continue;
+
+        // 匹配到请求头方法后(正常情况不怕没有空格),从请求头方法开始遍历查找空格找到HTTP版本的位置
+        const char* ptr = (const char*)app_buffer+str_len+1;
+        for(; *ptr != ' '; ptr++);
+        ptr++;
+        // 匹配 HTTP版本字符串
+        if(0 == memcmp(ptr, HTTP_VERSION_1_0, strlen(HTTP_VERSION_1_0)) || \
+            0 == memcmp(ptr, HTTP_VERSION_1_1, strlen(HTTP_VERSION_1_1)))
+        {
+            goto ANALYSIS_HTTP_SUCCESS_ADDLIST;
+        }
+            
+    }
+
+    // TODO: 匹配应答消息 HTTP1.1 200 OK
+    if (0 == memcmp(app_buffer, HTTP_VERSION_1_0, strlen(HTTP_VERSION_1_0)) ||
+        0 == memcmp(app_buffer, HTTP_VERSION_1_1, strlen(HTTP_VERSION_1_1)))
+    {
+        goto ANALYSIS_HTTP_SUCCESS_ADDLIST;
+    }
+
+return 1;
+// 匹配HTTP成功
+
+ANALYSIS_HTTP_SUCCESS_ADDLIST:
+    if (NULL != ((dpi_pkt *)pkt_ptr)->ip_head_ptr && NULL != ((dpi_pkt *)pkt_ptr)->tcp_head_ptr)
+    {
+        tcp.ipv4.src_port = ((dpi_pkt *)pkt_ptr)->tcp_head_ptr->tcp_sport;
+        tcp.ipv4.dst_Port = ((dpi_pkt *)pkt_ptr)->tcp_head_ptr->tcp_dport;
+        tcp.ipv4.dst_ip = ((dpi_pkt *)pkt_ptr)->ip_head_ptr->ip_daddr;
+        tcp.ipv4.src_ip = ((dpi_pkt *)pkt_ptr)->ip_head_ptr->ip_saddr;
+    }
+    if (NULL == find_connect_ipproto_list(&tcp, HTTP))
+        add_connect_ipproto_list(&tcp, HTTP);
+
+ANALYSIS_HTTP_SUCCESS:
+    if (NULL != ((dpi_pkt *)pkt_ptr)->tcp_head_ptr || NULL != pkt_ptr)
+    {
+        ((dpi_pkt *)pkt_ptr)->http_head_ptr = app_buffer;
+        ((dpi_pkt *)pkt_ptr)->http_len = tcp_len;
+    }
+    if (NULL != res_ptr)
+        ++((dpi_result *)res_ptr)->tcp_proto_count[HTTP];
     return 0;
+
 }
 
-
+// 处理SSH报文协议
 u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void* res_ptr)
 {
     dpi_connection_t tcp = {0};
@@ -32,7 +128,7 @@ u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void
         3、数据段中有SSH-字段
     */
     if( NULL == app_buffer)
-        return 0;
+        return 1;
 
     if (NULL != ((dpi_pkt *)pkt_ptr)->ip_head_ptr && NULL != ((dpi_pkt *)pkt_ptr)->tcp_head_ptr)
     {
@@ -42,55 +138,47 @@ u_int32_t analysis_ssh(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void
         tcp.ipv4.src_ip = ((dpi_pkt *)pkt_ptr)->ip_head_ptr->ip_saddr;
     }
 
-    // 判断数据头有没有 SSH- 字样,
+    // 匹配到字符串"SSH-"",说明之后这个ip和端口都是ssh包,添加进ssh链表
     // 如果有说明他在建立SSH连接,将他添加到他IP和端口记录到链表中,之后所有的这个IP和端口的通讯都是SSH
-    if (0 == strcmp("SSH-", app_buffer))
-    {
-        if (NULL != ((dpi_pkt *)pkt_ptr)->tcp_head_ptr || NULL != pkt_ptr)
-        {
-            ((dpi_pkt *)pkt_ptr)->ssh_head_ptr = app_buffer;
-            ((dpi_pkt *)pkt_ptr)->ssh_len = tcp_len;
-        }
-        // 匹配到字符串 SSH-,说明之后这个ip和端口都是ssh包,添加进ssh链表
-        if(0<find_connect_ipproto_list(&tcp, SSH))
-            add_connect_ipproto_list(&tcp, SSH);
-        if (NULL != res_ptr)
-            ++((dpi_result *)res_ptr)->tcp_proto_count[SSH];
-        return 1;
-    }
+    //if (0 == strcmp("SSH", app_buffer))
+    char strc[] = {0x53, 0x53, 0x48, 0x2d, 0x0};    // "SSH-"
+    if(0 == memcmp(strc, app_buffer, 4))
+        goto ANALYSIS_SSH_SUCCESS_ADDLIST;
 
     // 指向tcp头的指针是不是为空,并且字段大于10
     if (NULL != ((dpi_pkt *)pkt_ptr)->tcp_head_ptr && NULL != pkt_ptr && 10 < tcp_len)
     {
-        u_int32_t port = ntohs(22);
+        u_int32_t port = htons(22);
 
-        // 判断通信双方端口有没有22+通过长度判断
+        // 判断通信双方端口有没有22和通过长度判断
         if (port == ((dpi_pkt *)pkt_ptr)->tcp_head_ptr->tcp_sport || port == ((dpi_pkt *)pkt_ptr)->tcp_head_ptr->tcp_dport)
-        {
-            ((dpi_pkt *)pkt_ptr)->ssh_head_ptr = app_buffer;
-            ((dpi_pkt *)pkt_ptr)->ssh_len = tcp_len;
-            if(0<find_connect_ipproto_list(&tcp, SSH))
-                add_connect_ipproto_list(&tcp, SSH);
-            if (NULL != res_ptr)
-                ++((dpi_result *)res_ptr)->tcp_proto_count[SSH];
-            return 1;
-        }
+            goto ANALYSIS_SSH_SUCCESS_ADDLIST;
     }
 
     // 遍历已知的建立的ssh的链表中他的IP
-    if (0 < find_connect_ipproto_list(&tcp, SSH))
+    if (NULL !=  find_connect_ipproto_list(&tcp, SSH))
+        goto ANALYSIS_SSH_SUCCESS;
+
+    return 1;
+
+ANALYSIS_SSH_SUCCESS_ADDLIST:
+    if (NULL == find_connect_ipproto_list(&tcp, SSH))
+        add_connect_ipproto_list(&tcp, SSH);
+
+ANALYSIS_SSH_SUCCESS:
+    if (NULL != ((dpi_pkt *)pkt_ptr)->tcp_head_ptr || NULL != pkt_ptr)
     {
         ((dpi_pkt *)pkt_ptr)->ssh_head_ptr = app_buffer;
         ((dpi_pkt *)pkt_ptr)->ssh_len = tcp_len;
-        if (NULL != res_ptr)
-            ++((dpi_result *)res_ptr)->tcp_proto_count[SSH];
-        return 1;
     }
+    if (NULL != res_ptr)
+        ++((dpi_result *)res_ptr)->tcp_proto_count[SSH];
     return 0;
 }
 
 u_int32_t analysis_ftp(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void* res_ptr)
 {
 
-    return 0;
+    return 1;
 }
+
