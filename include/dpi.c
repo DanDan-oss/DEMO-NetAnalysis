@@ -62,6 +62,7 @@ void dpi_loop(dpi_result* res_ptr)
     {
         printf("数据处理: %s包数量有%d\n", protocl_tcp_string[i], res_ptr->tcp_proto_count[i]);
     }
+    
     show_proto_all();
     // 释放 protolist
     fini_connect_ipproto_list();

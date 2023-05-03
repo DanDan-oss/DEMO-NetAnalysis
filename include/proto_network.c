@@ -41,7 +41,7 @@ u_int32_t analysis_ip(void* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  void* r
     inet_ntop(AF_INET, (const u_int8_t*)&ip_head_ptr->ip_saddr, src_addr, sizeof(src_addr));
     inet_ntop(AF_INET, (const u_int8_t*)&ip_head_ptr->ip_daddr, des_addr, sizeof(des_addr));
 
-    printf("    ipVer:%x ipHeadLen:%d ipLen:%d ipID:%.4x proto:%d ipSrc:%s ipDest:%s \n", 
+    //printf("    ipVer:%x ipHeadLen:%d ipLen:%d ipID:%.4x proto:%d ipSrc:%s ipDest:%s \n", \
        ip_version, ip_head_len, ipdate_len, ipdate_id, proto, src_addr, des_addr);
 
     
@@ -63,8 +63,9 @@ u_int32_t analysis_ip(void* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  void* r
 
     case IPPROTO_UDP:   // UDP：17
     {
-         if(res_ptr)
-            ++((dpi_result*)res_ptr)->udp_count;
+        u_int32_t udp_len = ip_len - ip_head_len;
+        dpi_udp_head* udp_buffer = (dpi_tcp_head*)((u_int8_t*)ip_head_ptr + ip_head_len);
+        analysis_udp(pkt_ptr, udp_buffer, udp_len, res_ptr);
         break;
     }
 

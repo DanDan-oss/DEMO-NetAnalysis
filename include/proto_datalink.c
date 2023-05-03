@@ -45,7 +45,7 @@ u_int32_t analysis_ether(void* pkt_ptr, void* ether_buffer,  uint32_t ether_len,
     *(uint32_t*) shost = ntohl(*(uint32_t*) ((u_int8_t*)ether_buffer+6));
     *(uint16_t*)(shost+4) = ntohs(*(uint16_t*) ((u_int8_t*)ether_buffer+10));
 
-    printf("Type:%.4x Length:%d  DestMac:%.8x%.4x SrcMac:%.8x%.4x\n", type, ether_len, 
+    //printf("Type:%.4x Length:%d  DestMac:%.8x%.4x SrcMac:%.8x%.4x\n", type, ether_len, \
         *(u_int32_t*)dhost, *(uint16_t*)(dhost+4) , *(uint32_t*)shost, *(uint16_t*)(shost+4));
     #include <netinet/ip.h>
         struct iphdr i = {0};

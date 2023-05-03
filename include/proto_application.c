@@ -4,18 +4,18 @@
 #include <stdlib.h>
 #include <string.h>
 
-// TCP应用层协议解析函数数组
-protocl_tcp_analyze_func_t protocl_analyze_funcs[PROTOCOL_TCP_MAX]=
-{
-    analysis_http,
-    analysis_ssh,
-    analysis_ftp
-};
-
 // TCP协议数组名
 const char* protocl_tcp_string[PROTOCOL_TCP_MAX]=
 {
     PROTO_TCP_STRING
+};
+
+// TCP应用层协议解析函数数组
+protocl_tcp_analyze_func_t protocl_analyze_tcp_funcs[PROTOCOL_TCP_MAX] =
+{
+    analysis_http,
+    analysis_ssh,
+    analysis_ftp
 };
 
 // http报文类型
@@ -46,6 +46,17 @@ const char* http_request_mothod_strings[HTTP_REQUEST_MAX]=
     "DELETE",
     "TRACE",
     "CONNECT",
+};
+
+/* ========  UDP =======*/
+const char* protocl_udp_string[PROTOCOL_UDP_MAX]=
+{
+    PROTO_UDP_STRING
+};
+protocl_udp_analyze_func_t protocl_analyze_udp_funcs[PROTOCOL_UDP_MAX] = 
+{
+    analysis_tftp,
+    analysis_ntp
 };
 
 
@@ -182,3 +193,14 @@ u_int32_t analysis_ftp(void* pkt_ptr, void* app_buffer,  uint32_t tcp_len,  void
     return 1;
 }
 
+u_int32_t analysis_tftp(void* pkt_ptr, void* udp_buffer,  uint32_t udp_len,  void* res_ptr)
+{
+    printf(" analysis_tftp func\n");
+    return 1;
+}
+
+u_int32_t analysis_ntp(void* pkt_ptr, void* udp_buffer,  uint32_t udp_len,  void* res_ptr)
+{
+    printf(" analysis_ntp func\n");
+    return 1;
+}
