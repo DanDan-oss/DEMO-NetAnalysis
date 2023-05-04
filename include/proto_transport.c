@@ -61,7 +61,7 @@ u_int32_t analysis_udp(void* pkt_ptr, void* udp_buffer,  uint32_t udp_len,  void
     // 应用层协议起始地址 = udp起始地址+udp头长度
     uint8_t *app_buffer = (uint8_t *)udp_buffer + 8;
 
-    printf("    udp: sport:%d dport:%d udplen:%d\n", sport, dport, udpsize);
+    //printf("    udp: sport:%d dport:%d udplen:%d\n", sport, dport, udpsize);
     // TODO: 循环调用UDP应用层支持的协议解析函数
     for (int i = 0; i < PROTOCOL_UDP_MAX; ++i)
         if (0 == protocl_analyze_udp_funcs[i](pkt_ptr, app_buffer, app_len, res_ptr))

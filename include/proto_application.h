@@ -22,7 +22,7 @@ typedef u_int32_t (*protocl_tcp_analyze_func_t)(void*, void*,  uint32_t,  void*)
 // TCP下的应用层协议函数数组定义(由于多个源文件导入,会重复定义,添加extern导入有定义的源文件的)
 extern protocl_tcp_analyze_func_t protocl_analyze_tcp_funcs[PROTOCOL_TCP_MAX];
 // TCP下的应用层协议排列
-extern const char* protocl_tcp_string[PROTOCOL_TCP_MAX];
+extern const char* g_protocl_tcp_string[PROTOCOL_TCP_MAX];
 
 /* 处理TCP报文协议
 @pkt_ptr:
@@ -50,10 +50,11 @@ typedef enum _UDP_PROTOCOL
     NTP=1,
     PROTOCOL_UDP_MAX
 }UDP_PROTOCOL;
-typedef u_int32_t (*protocl_udp_analyze_func_t)(void*, void*,  uint32_t,  void*);
+typedef u_int32_t (*protocl_udp_analyze_func_t)(void* pkt_ptr, void* udp_buffer,  uint32_t udp_len,  void* res_ptr);
 
 extern protocl_udp_analyze_func_t protocl_analyze_udp_funcs[PROTOCOL_UDP_MAX];
-extern const char* protocl_udp_string[PROTOCOL_UDP_MAX];
+extern const char* g_protocl_udp_string[PROTOCOL_UDP_MAX];
+
 
 /* 处理UDP报文协议
 @pkt_ptr:

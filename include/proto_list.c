@@ -74,7 +74,7 @@ void print_ipproto_list(void* node)
 
 uint32_t show_connect_ipproto_list(proto_list_t* connect, TCP_PROTOCOL proto)
 {
-    printf("showData(%d:%s)\n", proto, protocl_tcp_string[proto]);
+    printf("showData(%d:%s)\n", proto, g_protocl_tcp_string[proto]);
     ProtoListPrint(connect, print_ipproto_list);
 }
 

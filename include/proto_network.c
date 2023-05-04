@@ -64,7 +64,7 @@ u_int32_t analysis_ip(void* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  void* r
     case IPPROTO_UDP:   // UDP：17
     {
         u_int32_t udp_len = ip_len - ip_head_len;
-        dpi_udp_head* udp_buffer = (dpi_tcp_head*)((u_int8_t*)ip_head_ptr + ip_head_len);
+        dpi_udp_head* udp_buffer = ( dpi_udp_head*)((u_int8_t*)ip_head_ptr + ip_head_len);
         analysis_udp(pkt_ptr, udp_buffer, udp_len, res_ptr);
         break;
     }

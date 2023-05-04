@@ -59,10 +59,11 @@ void dpi_loop(dpi_result* res_ptr)
     printf("数据处理: TCP包数量有%d\n", res_ptr->tcp_count);
     printf("数据处理: UDP包数量有%d\n", res_ptr->udp_count);
     for(int i=0; i<PROTOCOL_TCP_MAX; ++i)
-    {
-        printf("数据处理: %s包数量有%d\n", protocl_tcp_string[i], res_ptr->tcp_proto_count[i]);
-    }
+        printf("数据处理TCP: %s包数量有%d\n", g_protocl_tcp_string[i], res_ptr->tcp_proto_count[i]);
     
+    for(int i=0; i<PROTOCOL_UDP_MAX; ++i)
+        printf("数据处理UDP: %s包数量有%d\n", g_protocl_udp_string[i], res_ptr->udp_proto_count[i]);
+
     show_proto_all();
     // 释放 protolist
     fini_connect_ipproto_list();
