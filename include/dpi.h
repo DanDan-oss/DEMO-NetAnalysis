@@ -32,6 +32,7 @@ typedef struct _dpi_result
 
 //===========应用层==========
     uint32_t tcp_proto_count[PROTOCOL_TCP_MAX];
+    uint32_t udp_proto_count[PROTOCOL_UDP_MAX];
 
 }dpi_result, *dpi_result_ptr;
 
@@ -51,13 +52,22 @@ typedef struct _dpi_pkt
     uint32_t tcp_len;
     dpi_tcp_head* tcp_head_ptr;
 
-//===========应用层协议(HTTP、SSH和FTP)==========
+//===========TCP应用层协议(HTTP、SSH和FTP)==========
     uint32_t ssh_len;
     void* ssh_head_ptr;
 
     uint32_t http_len;
     void* http_head_ptr;
 
+    uint32_t ftp_len;
+    void* ftp_head_ptr;
+
+//=========== UDP应用层协议(TFTP、NTP)==========
+    uint32_t tftp_len;
+    void* tftp_head_ptr;
+
+    uint32_t ntp_len;
+    void* ntp_head_ptr;
 }dpi_pkt, *dpi_pkt_ptr;
 
 /* dpi初始化,打开cap文件

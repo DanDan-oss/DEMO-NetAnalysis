@@ -2,7 +2,7 @@
 #include "dpi.h"
 #include "./utils/dpi_list.h"
 
-#define PCAP_FILE_PATH "../pcap/test.pcap"
+#define PCAP_FILE_PATH "../pcap/tftp.cap"
 
 int main(int argc, char* argv[])
 {
