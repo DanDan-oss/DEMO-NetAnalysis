@@ -4,6 +4,7 @@
 
 u_int32_t analysis_ip(void* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  void* res_ptr)
 {
+    dpi_pkt* dpi_pkt_ptr = (dpi_pkt*)pkt_ptr;
     if(NULL == ip_buffer)
     {
         printf("Error: ip_buffer is null\n");
@@ -12,8 +13,8 @@ u_int32_t analysis_ip(void* pkt_ptr, void* ip_buffer,  uint32_t ip_len,  void* r
     if(res_ptr)
         ++((dpi_result*)res_ptr)->ip_count;
 
-    dpi_ip_head* ip_head_ptr= ((dpi_pkt*)pkt_ptr)->ip_head_ptr = ip_buffer;
-    ((dpi_pkt*)pkt_ptr)->ip_len = ip_len;
+    dpi_ip_head* ip_head_ptr= dpi_pkt_ptr->ip_head_ptr = ip_buffer;
+    dpi_pkt_ptr->ip_len = ip_len;
 
     // 网络字节序转主机字节序 之后打印
     // IP版本号, IPV4，IPV6

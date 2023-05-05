@@ -5,6 +5,8 @@
 
 u_int32_t analysis_ether(void* pkt_ptr, void* ether_buffer,  uint32_t ether_len, void* res_ptr)
 {
+    dpi_pkt* dpi_pkt_ptr = (dpi_pkt*)pkt_ptr;
+
     if(NULL == ether_buffer)
     {
         printf("ERROR: ether_buffer is NULL\n");
@@ -13,8 +15,8 @@ u_int32_t analysis_ether(void* pkt_ptr, void* ether_buffer,  uint32_t ether_len,
     if(!res_ptr)
         ++((dpi_result*)res_ptr)->ether_count;
 
-    dpi_eth_head* eth_head_ptr = ((dpi_pkt*)pkt_ptr)->eth_head_ptr = (dpi_eth_head*)ether_buffer;
-    ((dpi_pkt*)pkt_ptr)->ether_len =  ether_len;
+    dpi_eth_head* eth_head_ptr = dpi_pkt_ptr->eth_head_ptr = (dpi_eth_head*)ether_buffer;
+    dpi_pkt_ptr->ether_len =  ether_len;
     /*
     // 以太网帧长度 = 网络层长度 + 以太网头长度
     // 以太网帧长度除去CRC 4字节最低60,如果IP报文过短,剩余0填充.
@@ -59,6 +61,5 @@ u_int32_t analysis_ether(void* pkt_ptr, void* ether_buffer,  uint32_t ether_len,
         analysis_ip(pkt_ptr, ip_buffer, ip_len, res_ptr);
     }
 
-    
     return eth_head_ptr->eth_type;
 }

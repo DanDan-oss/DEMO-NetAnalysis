@@ -5,6 +5,8 @@
 
 u_int32_t analysis_tcp(void* pkt_ptr, void* tcp_buffer,  uint32_t tcp_len,  void* res_ptr)
 {
+    dpi_pkt* dpi_pkt_ptr = (dpi_pkt*)pkt_ptr;
+
     if(NULL == tcp_buffer || tcp_len< 20)
     {
         printf("Error: tcp_buffer is null\n");
@@ -12,6 +14,12 @@ u_int32_t analysis_tcp(void* pkt_ptr, void* tcp_buffer,  uint32_t tcp_len,  void
     }
     if(res_ptr)
         ++((dpi_result*)res_ptr)->tcp_count;
+
+    if (dpi_pkt_ptr)
+    {
+        dpi_pkt_ptr->tcp_head_ptr = tcp_buffer;
+        dpi_pkt_ptr->ip_len = tcp_len;
+    }
     
     dpi_tcp_head* tcp_head_ptr = tcp_buffer;
     uint16_t sport = htons(tcp_head_ptr->tcp_sport);
@@ -30,19 +38,17 @@ u_int32_t analysis_tcp(void* pkt_ptr, void* tcp_buffer,  uint32_t tcp_len,  void
 
     // TODO: 循环调用TCP应用层支持的协议解析函数
     for (int i = 0; i < PROTOCOL_TCP_MAX; ++i)
-        if (0 == protocl_analyze_tcp_funcs[i](pkt_ptr, app_buffer, app_len, res_ptr))
+        if (0 == protocl_analyze_tcp_funcs[i](dpi_pkt_ptr, app_buffer, app_len, res_ptr))
             break;
 
-    if (pkt_ptr)
-    {
-        ((dpi_pkt *)pkt_ptr)->tcp_head_ptr = tcp_buffer;
-        ((dpi_pkt *)pkt_ptr)->ip_len = tcp_len;
-    }
+
     return seq;
 }
 
 u_int32_t analysis_udp(void* pkt_ptr, void* udp_buffer,  uint32_t udp_len,  void* res_ptr)
 {
+    dpi_pkt* dpi_pkt_ptr = (dpi_pkt*)pkt_ptr;
+
     if(NULL == udp_buffer || udp_len < 8)
     {
         printf("Error: udp_buffer is null\n");
@@ -50,6 +56,12 @@ u_int32_t analysis_udp(void* pkt_ptr, void* udp_buffer,  uint32_t udp_len,  void
     }
     if (res_ptr)
         ++((dpi_result *)res_ptr)->udp_count;
+    
+    if (dpi_pkt_ptr)
+    {
+        dpi_pkt_ptr->tcp_head_ptr = udp_buffer;
+        dpi_pkt_ptr->ip_len = udp_len;
+    }
 
     dpi_udp_head* udp_head_ptr = udp_buffer;
     uint16_t sport = htons(udp_head_ptr->source);
@@ -67,10 +79,6 @@ u_int32_t analysis_udp(void* pkt_ptr, void* udp_buffer,  uint32_t udp_len,  void
         if (0 == protocl_analyze_udp_funcs[i](pkt_ptr, app_buffer, app_len, res_ptr))
             break;
 
-    if (pkt_ptr)
-    {
-        ((dpi_pkt *)pkt_ptr)->tcp_head_ptr = udp_buffer;
-        ((dpi_pkt *)pkt_ptr)->ip_len = udp_len;
-    }
+
     return 0;
 }

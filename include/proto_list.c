@@ -67,7 +67,7 @@ void print_ipproto_list(void* node)
     
     inet_ntop(AF_INET, (const u_int8_t*)&(connect->src_ip), srcAddr, sizeof(srcAddr));
     inet_ntop(AF_INET, (const u_int8_t*)&(connect->dst_ip), destAddr, sizeof(destAddr));
-    printf("    srcAddr:%s, srcPort:%d , DestAddr:%s, DestPort:%d\n", srcAddr, ntohs(connect->src_port),
+    printf("    addr: %p srcAddr:%s, srcPort:%d , DestAddr:%s, DestPort:%d\n", node, srcAddr, ntohs(connect->src_port),
     destAddr, ntohs(connect->dst_Port));    
     return;
 }
