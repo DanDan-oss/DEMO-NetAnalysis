@@ -294,6 +294,34 @@ ANALYSIS_TFTP_SUCCESS:
 
 u_int32_t analysis_ntp(void* pkt_ptr, void* udp_buffer,  uint32_t udp_len,  void* res_ptr)
 {
-    
-    return 1;
+    dpi_pkt* dpi_pkt_ptr = (dpi_pkt*)pkt_ptr;
+    dpi_connection_t ip = {0};
+
+    uint16_t li =0;
+    uint16_t vn =0;
+    uint16_t mode =0;
+    uint16_t stratum = 0;
+
+    if( NULL == udp_buffer)
+        return 1;
+
+    if( udp_len < 48 || udp_len>60)
+        return 1;
+    li = *((uint8_t*)udp_buffer) &0x3;
+    vn = (*((uint8_t*)udp_buffer) &0x38) >> 3;
+    mode = (*((uint8_t*)udp_buffer) &0xe0) >> 6;
+    stratum = *((uint8_t*)udp_buffer+1);
+
+    if(stratum>16 ||  stratum<0 || vn < 1)
+        return 1;
+
+    if (NULL != dpi_pkt_ptr)
+    {
+        dpi_pkt_ptr->ntp_head_ptr = udp_buffer;
+        dpi_pkt_ptr->ntp_len = udp_len;
+    }
+    if (NULL != res_ptr)
+        ++((dpi_result *)res_ptr)->udp_proto_count[NTP];
+    printf("    NTP: but=%x li=%X vn=%d mode=%X stratum=%X\n",  *(uint8_t*)udp_buffer, li, vn, mode, stratum );
+    return 0;
 }
